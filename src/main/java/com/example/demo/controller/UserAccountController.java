@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.entity.UserAccount;
 import com.example.demo.service.UserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +15,12 @@ import java.time.LocalDateTime;
 public class UserAccountController {
 
     private final UserAccountService userAccountService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserAccountController(UserAccountService userAccountService) {
+    public UserAccountController(UserAccountService userAccountService, BCryptPasswordEncoder passwordEncoder) {
         this.userAccountService = userAccountService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/add")
@@ -26,7 +29,11 @@ public class UserAccountController {
                           @RequestParam String password) {
         UserAccount newUser = new UserAccount();
         newUser.setEmail(email);
-        newUser.setPassword(password);
+
+        // Хешуємо пароль перед збереженням
+        String encodedPassword = passwordEncoder.encode(password);
+        newUser.setPassword(encodedPassword);
+
         newUser.setCreatedAt(LocalDateTime.now());
 
         userAccountService.save(newUser);
@@ -43,18 +50,16 @@ public class UserAccountController {
         return "menu";  // Повертає HTML-сторінку menu.html з папки templates
     }
 
-        @PostMapping("/login")
+    @PostMapping("/login")
     public String handleLogin(@RequestParam String email, @RequestParam String password, Model model) {
 
         UserAccount userAccount = userAccountService.findByEmail(email);
 
-        if (userAccount != null && userAccount.getPassword().equals(password)) {
+        if (userAccount != null && passwordEncoder.matches(password, userAccount.getPassword())) {
             return "redirect:/api/menu"; // Перенаправлення на сторінку меню
         } else {
             model.addAttribute("error", "Invalid email or password");
             return "login";  // Вказуємо шлях у межах API
         }
     }
-
-
 }
