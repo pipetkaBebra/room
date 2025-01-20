@@ -56,13 +56,13 @@
         /* Контейнер кімнат */
         .room-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr) auto; /* Додано окремий стовпець для кнопки Light */
+            grid-template-columns: repeat(3, 1fr); /* Три стовпці */
             gap: 20px; /* Відступи між кнопками */
             width: 80%;
             max-width: 800px;
             margin-top: 30px;
-            position: relative;
         }
+
 
         /* Кнопки кімнат */
         .room-button {
@@ -96,33 +96,6 @@
         .room-count {
             font-size: 24px;
             font-weight: bold;
-        }
-
-        /* Кнопка Light */
-        .light-button {
-            grid-column: 4; /* Розташовує кнопку в четвертому стовпці */
-            grid-row: 1 / span 2; /* Займає дві строки */
-            background: #ffd54f;
-            color: #000;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            padding: 20px;
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.3s;
-            align-self: center; /* Вирівнювання по вертикалі */
-        }
-
-        .light-button.disabled {
-            background-color: gray; /* Колір після натискання кнопки "Off" */
-        }
-
-        .light-button:hover {
-            background: #ffc107;
-            transform: translateY(-5px);
         }
 
         /* Таблиця логів */
@@ -177,7 +150,6 @@
             }
         }
     </style>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const rooms = ['101', '102', '103', '104', '105', '106'];
@@ -209,15 +181,6 @@
                         console.error(`Error loading data for room ${room}:`, error);
                     }
                 }
-
-                // Додаємо кнопку Light після завантаження кімнат
-                const lightButton = document.createElement('button');
-                lightButton.classList.add('light-button');
-                lightButton.textContent = 'Light';
-                lightButton.addEventListener('click', () => {
-                    alert('Light button clicked!');
-                });
-                container.appendChild(lightButton);
             };
 
             // Завантаження логів

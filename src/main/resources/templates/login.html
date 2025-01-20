@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #e8f5e9, #c8e6c9); /* Світлі тони зеленого */
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
             color: #333;
             display: flex;
             flex-direction: column;
@@ -31,7 +31,7 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 400px;
-            background: #e8f5e9; /* Замінили білий фон на більш м'який зелений */
+            background: #e8f5e9;
         }
 
         label {
@@ -52,14 +52,14 @@
         }
 
         input:focus {
-            border-color: #81c784; /* Легкий зелений колір при фокусуванні */
+            border-color: #81c784;
             outline: none;
         }
 
         button {
             width: 100%;
             padding: 12px;
-            background-color: #81c784; /* Світлий зелений */
+            background-color: #81c784;
             color: white;
             border: none;
             border-radius: 8px;
@@ -69,7 +69,7 @@
         }
 
         button:hover {
-            background-color: #66bb6a; /* Темніший зелений */
+            background-color: #66bb6a;
             transform: scale(1.05);
         }
 
@@ -79,22 +79,6 @@
             margin-bottom: 15px;
             text-align: center;
         }
-
-        /* Для мобільних пристроїв */
-        @media (max-width: 600px) {
-            .login-container {
-                padding: 20px 25px;
-                max-width: 90%;
-            }
-
-            h2 {
-                font-size: 24px;
-            }
-
-            input, button {
-                font-size: 14px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -102,7 +86,6 @@
 <div class="login-container">
     <h2>Login</h2>
 
-    <!-- Відображення повідомлення про помилку -->
     <div th:if="${error}" class="error-message">
         <p th:text="${error}"></p>
     </div>
