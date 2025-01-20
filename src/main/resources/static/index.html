@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Room Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+
+        .room-container {
+            display: grid;
+            grid-template-columns: repeat(3, 150px);
+            grid-gap: 20px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .room-button {
+            width: 150px;
+            height: 100px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        .room-button:hover {
+            background-color: #388E3C;
+        }
+
+        .room-button.empty {
+            background-color: #ccc;
+        }
+
+        .room-button.empty:hover {
+            background-color: #999;
+        }
+
+        .room-count {
+            font-size: 20px;
+            font-weight: bold;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .log-table {
+            display: none; /* Прихована таблиця за замовчуванням */
+            width: 80%;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rooms = ['101', '102', '103', '104', '105', '106'];
+            const container = document.querySelector('.room-container');
+            const logTable = document.querySelector('.log-table');
+            const logTableBody = logTable.querySelector('tbody');
+
+            // Завантажуємо дані про активних студентів для кожної кімнати
+            const loadRoomData = async () => {
+                for (const room of rooms) {
+                    try {
+                        const response = await fetch(`/api/active-in-room?roomNumber=${room}`);
+                        const data = await response.json();
+
+                        // Додаємо кнопку для кімнати
+                        const button = document.createElement('button');
+                        button.classList.add('room-button');
+                        if (data.length === 0) {
+                            button.classList.add('empty');
+                        }
+
+                        button.innerHTML = `
+                            Room ${room}
+                            ${data.length > 0 ? `<span class="room-count">${data.length}</span>` : ''}
+                        `;
+                        button.addEventListener('click', () => loadRoomLogs(room));
+                        container.appendChild(button);
+
+                    } catch (error) {
+                        console.error(`Error loading data for room ${room}:`, error);
+                    }
+                }
+            };
+
+
+
+            // Завантаження логів для кімнати
+            const loadRoomLogs = async (room) => {
+                try {
+                    const response = await fetch(`/api/room/${room}/logs`);
+                    const logs = await response.json();
+
+                    logTableBody.innerHTML = ''; // Очищуємо попередні дані
+
+                    logs.forEach(log => {
+                        const action = log.activeSymbol === '+' ? 'Entered' : 'Exited';
+                        const time = new Date(log.createdAt).toLocaleString();
+
+                        const row = `
+                            <tr>
+                                <td>${log.name}</td>
+                                <td>${log.email}</td>
+                                <td>${time}</td>
+                                <td>${action}</td>
+                            </tr>
+                        `;
+                        logTableBody.innerHTML += row;
+                    });
+
+                    // Показуємо таблицю
+                    logTable.style.display = 'table';
+
+                } catch (error) {
+                    console.error(`Error loading logs for room ${room}:`, error);
+                }
+            };
+
+            loadRoomData(); // Завантажуємо кнопки кімнат
+        });
+    </script>
+</head>
+<body>
+<h1>Room Status</h1>
+<div class="room-container">
+    <!-- Кнопки будуть завантажені тут -->
+</div>
+<table class="log-table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Time</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Дані будуть завантажені тут -->
+    </tbody>
+</table>
+</body>
+</html>
