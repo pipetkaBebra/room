@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/room/api")
 public class UserAccountController {
 
     private final UserAccountService userAccountService;
