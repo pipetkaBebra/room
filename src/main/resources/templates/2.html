@@ -12,10 +12,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             height: 100vh;
             background: linear-gradient(135deg, #4caf50, #81c784);
             color: #fff;
+            overflow-y: auto;
         }
 
         h1 {
@@ -97,22 +98,26 @@
             font-weight: bold;
         }
 
-        /* Таблиця логів */
-        .log-table {
-            display: none;
-            width: 90%;
-            max-width: 1000px;
+        /* Контейнер для таблиць */
+        /* Контейнер для таблиць */
+        .tables-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 1px; /* Зменшено відстань між таблицями */
             margin-top: 40px;
+            width: 90%;
+            flex-wrap: wrap;
+        }
+
+        /* Стиль для таблиць */
+        table {
+            width: 48%; /* Збільшено, якщо потрібно можна 50% */
+            max-width: 800px; /* Збільшено для ширших таблиць */
             background: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             overflow: hidden;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            color: #fff;
-        }
 
         th, td {
             padding: 15px;
@@ -133,6 +138,12 @@
             font-size: 16px;
         }
 
+        /* Прокручування таблиць */
+        .log-table, .params-table {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
         /* Для мобільних пристроїв */
         @media (max-width: 600px) {
             h1 {
@@ -144,8 +155,12 @@
                 padding: 15px;
             }
 
-            .log-table {
+            .log-table, .params-table {
                 font-size: 14px;
+            }
+
+            .tables-container {
+                flex-direction: column;
             }
         }
     </style>
@@ -155,6 +170,8 @@
             const container = document.querySelector('.room-container');
             const logTable = document.querySelector('.log-table');
             const logTableBody = logTable.querySelector('tbody');
+            const paramsTable = document.querySelector('.params-table');
+            const paramsTableBody = paramsTable.querySelector('tbody');
 
             // Завантаження даних для кімнат
             const loadRoomData = async () => {
@@ -173,7 +190,7 @@
                             Room ${room}
                             ${data.length > 0 ? `<div class="room-count">${data.length}</div>` : ''}
                         `;
-                        button.addEventListener('click', () => loadRoomLogs(room));
+                        button.addEventListener('click', () => loadRoomDataAndLogs(room));
                         container.appendChild(button);
 
                     } catch (error) {
@@ -182,14 +199,13 @@
                 }
             };
 
-            // Завантаження логів
-            const loadRoomLogs = async (room) => {
+            // Завантаження даних для кімнати та логів
+            const loadRoomDataAndLogs = async (room) => {
                 try {
-                    const response = await fetch(`/api/menu/room/${room}/logs`);
-                    const logs = await response.json();
-
+                    // Завантаження логів кімнати
+                    const logResponse = await fetch(`/api/menu/room/${room}/logs`);
+                    const logs = await logResponse.json();
                     logTableBody.innerHTML = '';
-
                     logs.forEach(log => {
                         const action = log.activeSymbol === '+' ? 'Entered' : 'Exited';
                         const time = new Date(log.createdAt).toLocaleString();
@@ -207,8 +223,39 @@
 
                     logTable.style.display = 'table';
 
+                    // Завантаження параметрів для кімнати
+                    const paramsResponse = await fetch(`/api/menu/room/${room}/data`);
+                    const params = await paramsResponse.json();
+
+// Очищаємо таблицю перед додаванням нових даних
+                    paramsTableBody.innerHTML = '';
+
+// Перебираємо всі елементи масиву params
+                    params.forEach(param => {
+                        // Форматуємо час у зручний формат для кожного елементу
+                        const timestamp = new Date(param.timestamp).toLocaleString(); // Форматування часу
+
+                        // Створюємо рядок для таблиці для кожного елемента
+                        const row = `
+                            <tr>
+                                <td>${param.temperature} °C</td>
+                                <td>${param.humidity} %</td>
+                                <td>${param.gasAmount} ppm</td>
+                                <td>${timestamp}</td> <!-- Додано час -->
+                            </tr>
+                        `;
+
+                        // Додаємо новий рядок в таблицю
+                        paramsTableBody.innerHTML += row;
+                    });
+
+// Показуємо таблицю, якщо її не було видно
+                    paramsTable.style.display = 'table';
+
+
+
                 } catch (error) {
-                    console.error(`Error loading logs for room ${room}:`, error);
+                    console.error(`Error loading data for room ${room}:`, error);
                 }
             };
 
@@ -228,18 +275,36 @@
 <div class="room-container">
     <!-- Кнопки кімнат будуть завантажені динамічно -->
 </div>
-<table class="log-table">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Time</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <!-- Дані логів будуть завантажені -->
-    </tbody>
-</table>
+<div class="tables-container">
+    <!-- Таблиця логів -->
+    <table class="log-table" style="display: none;">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Time</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Дані логів будуть завантажені -->
+        </tbody>
+    </table>
+
+    <!-- Таблиця параметрів -->
+    <table class="params-table" style="display: none;">
+        <thead>
+        <tr>
+            <th>Temperature</th>
+            <th>Humidity</th>
+            <th>Gas</th>
+            <th>Timestamp</th> <!-- Додано колонку для часу -->
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Дані параметрів будуть завантажені -->
+        </tbody>
+    </table>
+</div>
 </body>
 </html>

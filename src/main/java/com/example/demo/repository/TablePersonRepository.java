@@ -23,4 +23,6 @@ public interface TablePersonRepository extends JpaRepository<TablePerson, Long> 
     @Query("SELECT t FROM TablePerson t WHERE t.isActive = :isActive")
     List<TablePerson> findActiveUsers(boolean isActive);
 
+    List<TablePerson> findByEmailOrderByCreatedAtDesc(String email);
+
 }

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 @Controller
 @RequestMapping("/api/menu")
 public class TablePersonController {
@@ -34,7 +36,6 @@ public class TablePersonController {
     public String show2() {
         return "2"; // Повертає HTML-сторінку login.html з папки templates
     }
-
 
 
     // Додаємо нову особу з номером аудиторії
@@ -73,37 +74,37 @@ public class TablePersonController {
     public List<TablePerson> getRoomLogs(@PathVariable String roomNumber) {
         return tablePersonRepository.findLogsByRoomNumber(roomNumber);
     }
+
     @PostMapping("/off")
     public String turnOffActiveUsers() {
         LocalDateTime now = LocalDateTime.now();
 
-        // Знайдемо всіх користувачів, де isActive = true
+        // Отримуємо всіх користувачів, для яких останній запис був з isActive = true
         List<TablePerson> activeUsers = tablePersonRepository.findActiveUsers(true);
 
-        // Оновимо їх статус на false та додамо новий запис для кожного користувача
+        // Оновлюємо їх статус на false та додаємо новий запис
         for (TablePerson user : activeUsers) {
-            // Перевірка, чи остання дія користувача була з isActive = true
-            if (user.isActive()) {  // Замінили getIsActive() на isActive() без геттера
+            // Перевірка, чи останній запис користувача був з isActive = true
+            List<TablePerson> userLogs = tablePersonRepository.findByEmailOrderByCreatedAtDesc(user.getEmail());
 
+            if (!userLogs.isEmpty()) {
+                TablePerson lastEntry = userLogs.get(0);
 
-                // Додати новий запис лише в тому випадку, якщо його стан змінений
-                TablePerson newUser = TablePerson.builder()
-                        .name(user.getName())
-                        .email(user.getEmail())
-                        .isActive(false)
-                        .createdAt(now)
-                        .roomNumber(user.getRoomNumber())
-                        .build();
+                // Якщо останній запис мав значення true, то додати новий запис зі значенням false
+                if (lastEntry.isActive()) {
+                    TablePerson newUser = TablePerson.builder()
+                            .name(lastEntry.getName())
+                            .email(lastEntry.getEmail())
+                            .isActive(false)
+                            .createdAt(now)
+                            .roomNumber(lastEntry.getRoomNumber())
+                            .build();
 
-                tablePersonRepository.save(newUser);  // Зберігаємо новий запис
+                    tablePersonRepository.save(newUser);  // Зберігаємо новий запис з false
+                }
             }
         }
 
-
-        return "redirect:/api/menu";
+        return "redirect:/api/menu";  // Перенаправляємо на відповідну сторінку
     }
-
-
-
-
 }

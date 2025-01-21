@@ -1,19 +1,17 @@
 package com.example.demo;
 
-import org.springframework.boot.ConfigurableBootstrapContext;
+import com.example.demo.service.MqttService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import java.util.Arrays;
-
 @SpringBootApplication
 public class DemoApplication {
-
 	public static void main(String[] args) {
-
+		// Запуск Spring Boot додатку
 		ConfigurableApplicationContext context = SpringApplication.run(DemoApplication.class, args);
-		Arrays.stream(context.getBeanDefinitionNames()).forEach(System.out::println);
-	}
 
+		// Ініціалізація MqttService через Spring
+		MqttService mqttService = context.getBean(MqttService.class);
+	}
 }
